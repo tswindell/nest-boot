@@ -57,7 +57,8 @@ type NamespaceConfig struct {
 
     Mounts []Mount
 
-    NetworkAddr string
+    NetworkAddr   string
+    NetworkBridge string
 
     Exec Exec
 }
@@ -68,6 +69,8 @@ func GetConfig(f *os.File) (*NamespaceConfig, error) {
     c := &NamespaceConfig {
         Id: "0123456789", // TODO: Auto-Generate ...
         Features: []string {"ipc", "net", "ns", "pid", "user", "uts"},
+
+        NetworkBridge: "vbr0",
 
         //FIXME:
         //  Having a hard time getting uid/gid mappings working with subuids & subgids.

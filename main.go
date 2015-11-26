@@ -36,9 +36,19 @@ const NS_INSTANCE_TAG = "**--ns-instance--**"
 
 
 // Command line arguments ======================================================
-var aNetworkHelper = flag.String("network-helper", "", "Namespace network setup script.")
+var aNetworkBridge =
+    flag.String("network-bridge",
+                "",
+                "Network bridge to bind to.")
+var aNetworkAddr =
+    flag.String("network-address",
+                "",
+                "Namespace IPv4 address.")
+var aNetworkHelper =
+    flag.String("network-helper",
+                "",
+                "Namespace network setup script.")
 var aConfigFile = flag.String("config", "", "Namespace configuration file.")
-var aNetAddr = flag.String("ipaddr", "", "Namespace IPv4 address.")
 var aRootFS = flag.String("rootfs", "", "Namespace rootfs.")
 var aId = flag.String("nest-id", "", "Namespace label/id.")
 // =============================================================================
@@ -85,8 +95,12 @@ func clone(path string, args []string) error {
         config.RootFS = *aRootFS
     }
 
-    if len(*aNetAddr) > 0 {
-        config.NetworkAddr = *aNetAddr
+    if len(*aNetworkAddr) > 0 {
+        config.NetworkAddr = *aNetworkAddr
+    }
+
+    if len(*aNetworkBridge) > 0 {
+        config.NetworkBridge = *aNetworkBridge
     }
 
     nsGuid := config.Id
@@ -147,7 +161,9 @@ func clone(path string, args []string) error {
     }
 
     if len(networkHelper) > 0 {
-        nsnet := exec.Command(networkHelper, strconv.Itoa(c.Process.Pid))
+        nsnet := exec.Command(networkHelper,
+                              config.NetworkBridge,
+                              strconv.Itoa(c.Process.Pid))
         if o, e := nsnet.CombinedOutput(); e != nil {
             c.Process.Kill()
             return fmt.Errorf("Network helper failed: %v: %s\n", e, o)

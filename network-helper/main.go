@@ -27,8 +27,8 @@ import (
 
 /*   setup()
  */
-func setup(pid int) error {
-    br, e := netlink.LinkByName("vbr0")
+func setup(pid int, brName string) error {
+    br, e := netlink.LinkByName(brName)
     if e != nil {
         return fmt.Errorf("Host bridge not found: %v", e)
     }
@@ -73,18 +73,18 @@ func setup(pid int) error {
 /*   main()
  */
 func main() {
-    if len(os.Args) != 2 {
+    if len(os.Args) != 3 {
         os.Exit(1)
     }
 
-    pid, e := strconv.Atoi(os.Args[1])
+    pid, e := strconv.Atoi(os.Args[2])
     if e != nil {
         fmt.Fprintf(os.Stderr, "Failed to parse PID from args.")
         os.Exit(1)
     }
 
     fmt.Fprintf(os.Stderr, "PID: %d\n", pid)
-    if e := setup(pid); e != nil {
+    if e := setup(pid, os.Args[1]); e != nil {
         fmt.Fprintf(os.Stderr, "Error: %v\n", e)
         os.Exit(1)
     }
