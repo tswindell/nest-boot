@@ -9,6 +9,7 @@ To install this project:
 ```
 $ go get github.com/tswindell/nest-boot
 $ go get github.com/tswindell/nest-boot/network-helper
+$ sudo chown root.root $GOPATH/bin/network-helper && sudo chmod +s $GOPATH/bin/network-helper
 ```
 
 ## Example Usage
