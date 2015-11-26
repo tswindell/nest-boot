@@ -1,0 +1,7 @@
+{
+    "ID": "Nest-2",
+    "Features": ["ipc", "net", "ns", "pid", "user", "uts"],
+    "NetworkAddr": "10.0.0.3/24",
+    "RootFS": "/home/tswindell/nest-2-rootfs"
+}
+
