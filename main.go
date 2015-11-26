@@ -38,6 +38,9 @@ const NS_INSTANCE_TAG = "**--ns-instance--**"
 // Command line arguments ======================================================
 var aNetworkHelper = flag.String("network-helper", "", "Namespace network setup script.")
 var aConfigFile = flag.String("config", "", "Namespace configuration file.")
+var aNetAddr = flag.String("ipaddr", "", "Namespace IPv4 address.")
+var aRootFS = flag.String("rootfs", "", "Namespace rootfs.")
+var aId = flag.String("nest-id", "", "Namespace label/id.")
 // =============================================================================
 
 
@@ -61,6 +64,7 @@ func ShowError(m string, e error) {
 func clone(path string, args []string) error {
     var config *NamespaceConfig
 
+    // Build configuration, either from specified config file, or defaults.
     if len(*aConfigFile) > 0 {
         f, e := os.Open(*aConfigFile)
         if e != nil { return fmt.Errorf("Failed to load config: %v", e) }
@@ -70,6 +74,19 @@ func clone(path string, args []string) error {
         var e error
         config, e = GetConfig(nil)
         if e != nil { return fmt.Errorf("Failed to load config: %v", e) }
+    }
+
+    // Override loaded configuration with options supplied via command line.
+    if len(*aId) > 0 {
+        config.Id = *aId
+    }
+
+    if len(*aRootFS) > 0 {
+        config.RootFS = *aRootFS
+    }
+
+    if len(*aNetAddr) > 0 {
+        config.NetworkAddr = *aNetAddr
     }
 
     nsGuid := config.Id
@@ -121,8 +138,16 @@ func clone(path string, args []string) error {
     // allowing the namespace access to the bridged network interface. This
     // external command must be setuid and owned by root in order to create
     // these network interfaces.
-    if len(*aNetworkHelper) > 0 {
-        nsnet := exec.Command(*aNetworkHelper, strconv.Itoa(c.Process.Pid))
+    networkHelper := *aNetworkHelper
+
+    if len(networkHelper) == 0 {
+        if gopath := os.Getenv("GOPATH"); len(gopath) > 0 {
+            networkHelper = filepath.Join(gopath, "bin/network-helper")
+        }
+    }
+
+    if len(networkHelper) > 0 {
+        nsnet := exec.Command(networkHelper, strconv.Itoa(c.Process.Pid))
         if o, e := nsnet.CombinedOutput(); e != nil {
             c.Process.Kill()
             return fmt.Errorf("Network helper failed: %v: %s\n", e, o)
